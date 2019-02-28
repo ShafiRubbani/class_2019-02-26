@@ -38,16 +38,47 @@ spring_2019 <- read_excel("spring_2019.xlsx", skip = 3) %>%
 
 ```{r join_data}
 
-spring_enrollment <- spring_2018 %>% 
-  inner_join(spring_2019, by = c("course_id"), suffix = c("_2018", "_2019"))
+spring_enrollment <- spring_2019 %>% 
+  inner_join(spring_2018, by = c("course_id"), suffix = c(".2019", ".2018"))
 
 ```
 
-```{r analysis}
+```{r enrollment_drops}
 
 spring_enrollment %>% 
-  mutate(enrollment_drop = u_grad_2019 - u_grad_2018) %>%
-  arrange(desc(enrollment_drop)) %>% 
-  head()
+  mutate(change = u_grad.2019 - u_grad.2018) %>% 
+  select(course_title.2019, course_name.2019, u_grad.2018, u_grad.2019, change) %>% 
+  arrange(change) %>% 
+  slice(1:10) %>% 
 
+gt %>% 
+  tab_header(title = "Biggest Enrollment Decreases in Spring 2019") %>% 
+  cols_label(course_title.2019 = "Number",
+              course_name.2019 = "Name",
+              u_grad.2019 = "2019",
+              u_grad.2018 = "2018",
+              change = "Change") %>% 
+  tab_source_note("Data from the Harvard Registrar") #%>% 
+  #as_raw_html() %>% as.character() %>% cat()
+
+```
+
+***
+
+```{r biggest_new}
+spring_new <- spring_2019 %>%
+  anti_join(spring_2018, by = c("course_id"))
+
+spring_new %>%  
+  select(course_title, course_name, u_grad) %>% 
+  arrange(desc(u_grad)) %>% 
+  slice(1:10) %>% 
+  
+gt %>% 
+  tab_header(title = "Biggest New Classes in Spring 2019") %>% 
+  cols_label(course_title = "Number",
+              course_name = "Name",
+              u_grad = "Undergraduate Enrollment") %>% 
+  tab_source_note("Data from the Harvard Registrar") #%>% 
+  #as_raw_html() %>% as.character() %>% cat()
 ```
